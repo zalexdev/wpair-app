@@ -197,8 +197,8 @@ WhisperPair/
 ## Credits
 
 ### App Developer
-- **[@ZalexDev](https://github.com/zalexdev)**
 
+This application is an independent implementation created by **[@ZalexDev](https://github.com/zalexdev)** in his own capacity. The original KU Leuven researchers discovered and disclosed the vulnerability but have not released any code and are not affiliated with this project. Their inclusion in credits is solely to acknowledge their research contribution.
 ### Original Research Team
 **KU Leuven, Belgium**
 
@@ -212,7 +212,7 @@ WhisperPair/
 
 *\* Primary authors*
 
-**Funding:** Flemish Government Cybersecurity Research Program (VOEWICS02)
+**Funding for the original research:** Flemish Government Cybersecurity Research Program (VOEWICS02)
 
 ### Resources
 - [WhisperPair Research Paper](https://whisperpair.eu)
