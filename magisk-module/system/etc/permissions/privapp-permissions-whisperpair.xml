@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    WhisperPair Privileged App Permissions
+    This grants system-level permissions required for direct HFP connection control
+-->
+<permissions>
+    <privapp-permissions package="com.zalexdev.whisperpair">
+        <!-- Required for BluetoothHeadset.connect() without user interaction -->
+        <permission name="android.permission.MODIFY_PHONE_STATE"/>
+        
+        <!-- Required for privileged Bluetooth operations -->
+        <permission name="android.permission.BLUETOOTH_PRIVILEGED"/>
+        
+        <!-- Bluetooth connection management -->
+        <permission name="android.permission.BLUETOOTH_CONNECT"/>
+        <permission name="android.permission.BLUETOOTH_SCAN"/>
+        <permission name="android.permission.BLUETOOTH_ADMIN"/>
+        <permission name="android.permission.BLUETOOTH"/>
+        
+        <!-- Audio recording from Bluetooth SCO -->
+        <permission name="android.permission.RECORD_AUDIO"/>
+        <permission name="android.permission.CAPTURE_AUDIO_OUTPUT"/>
+        
+        <!-- Location for BLE scanning (required on newer Android) -->
+        <permission name="android.permission.ACCESS_FINE_LOCATION"/>
+        <permission name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+        
+        <!-- Notification for foreground service -->
+        <permission name="android.permission.POST_NOTIFICATIONS"/>
+        <permission name="android.permission.FOREGROUND_SERVICE"/>
+    </privapp-permissions>
+</permissions>

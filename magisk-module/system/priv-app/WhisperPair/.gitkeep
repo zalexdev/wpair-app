@@ -1,0 +1,4 @@
+# Place WhisperPair.apk here after building
+# 
+# Build the APK with: ./gradlew assembleRelease
+# Then copy: app/build/outputs/apk/release/app-release.apk -> WhisperPair.apk

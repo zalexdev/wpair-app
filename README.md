@@ -2,10 +2,10 @@
   <img src="assets/logo.png" alt="WhisperPair Logo" width="120" height="120">
 </p>
 
-<h1 align="center">WPair</h1>
+<h1 align="center">WPair (Root Enhanced Fork)</h1>
 
 <p align="center">
-  <strong>CVE-2025-36911 (eg WhisperPair) Vulnerability Scanner & Research Tool</strong>
+  <strong>CVE-2025-36911 PoC with Root-Based HFP Connection & Magisk Module</strong>
 </p>
 
 <p align="center">
@@ -13,20 +13,65 @@
   <a href="https://kotlinlang.org"><img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin"></a>
   <a href="https://www.cve.org/CVERecord?id=CVE-2025-36911"><img src="https://img.shields.io/badge/CVE-2025--36911-red" alt="CVE"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue" alt="License"></a>
+  <img src="https://img.shields.io/badge/Root-Required-orange" alt="Root Required">
 </p>
 
 <p align="center">
+  <a href="#whats-new-in-this-fork">What's New</a> •
   <a href="#features">Features</a> •
   <a href="#installation">Installation</a> •
   <a href="#usage">Usage</a> •
   <a href="#how-it-works">How It Works</a> •
-  <a href="#vulnerability">Vulnerability</a> •
   <a href="#credits">Credits</a>
 </p>
 
 ---
+
+## What's New in This Fork
+
+This fork by **[@k0ssa0](https://github.com/k0ssa0)** adds **root-based automation** to bypass Android's HFP connection restrictions. No more manual Bluetooth Settings!
+
+### New Features
+
+| Feature | Description |
+|---------|-------------|
+| **🔓 Root HFP Connection** | Connect audio profiles directly without Settings dialog |
+| **⚡ Auto-Test on Scan** | Automatically test devices as they're discovered |
+| **🎯 Auto-Exploit Vulnerable** | Automatically exploit devices that test vulnerable |
+| **🔧 Fix Connection (Root)** | Remove zombie bonds + restart Bluetooth stack |
+| **📡 Reconnect All** | Batch reconnect all paired devices with staggered timing |
+| **📤 Export Devices** | Share paired device list via system share sheet |
+| **🐛 Debug Logs** | In-app root command viewer for troubleshooting |
+| **📦 Magisk Module** | Install as privileged system app with auto-permissions |
+
+### Downloads
+
+| File | Description |
+|------|-------------|
+| [WhisperPair-v1.2.0.apk](releases/WhisperPair-v1.2.0.apk) | Signed release APK (8 MB) |
+| [WhisperPair-Magisk-v1.2.0.zip](releases/WhisperPair-Magisk-v1.2.0.zip) | Magisk module (7.6 MB) |
+
+### Root Requirements
+
+This fork requires **root access** (Magisk, KernelSU, etc.) for:
+- `pm grant` to set MODIFY_PHONE_STATE, BLUETOOTH_PRIVILEGED
+- `cmd bluetooth_manager connect` for direct HFP connection
+- `pkill com.android.bluetooth` for stack restart
+
+### Technical Implementation
+
+| Component | Method |
+|-----------|--------|
+| **Root Execution** | stdin-based `su -c` for Magisk/KernelSU compatibility |
+| **HFP Connection** | Multi-strategy: `bluetooth_manager` → BluetoothHeadset API → `btmgmt` fallback |
+| **Bond Removal** | Reflection on hidden `BluetoothDevice.removeBond()` method |
+| **Stack Restart** | `pkill -9 com.android.bluetooth` triggers system respawn |
+| **Permission Grant** | Runtime `pm grant` for BLUETOOTH_PRIVILEGED, MODIFY_PHONE_STATE |
+
+---
+
 ## Disclaimer
-This application is an independent implementation created by **[@ZalexDev](https://github.com/zalexdev)** in his own capacity. The original KU Leuven researchers discovered and disclosed the vulnerability but have not released any code and are not affiliated with this project. Their inclusion in credits is solely to acknowledge their research contribution.
+This application is an independent implementation created by **[@ZalexDev](https://github.com/zalexdev)** in his own capacity. Root enhancements by **[@k0ssa0](https://github.com/k0ssa0)**. The original KU Leuven researchers discovered and disclosed the vulnerability but have not released any code and are not affiliated with this project.
 
 ## Overview
 
@@ -61,19 +106,25 @@ This tool deliberately does not include FMDN provisioning functionality. While t
 ### Requirements
 - Android 8.0 (API 26) or higher
 - Bluetooth LE support
+- **Root access** (Magisk, KernelSU, or similar)
 - Location permission (required for BLE scanning on Android) / Nearby Devices (A13+)
 
-### Download
-1. Go to [Releases](https://github.com/zalexdev/whisper-pair-app/releases)
-2. Download the latest `WPair-vX.X.X.apk`
-3. Enable "Install from unknown sources" if prompted
-4. Install and grant required permissions
+### Option 1: APK Install (Recommended)
+1. Download [WhisperPair-v1.2.0.apk](releases/WhisperPair-v1.2.0.apk)
+2. Install and grant root access when prompted
+3. Grant Bluetooth and location permissions
+
+### Option 2: Magisk Module (Privileged App)
+1. Download [WhisperPair-Magisk-v1.2.0.zip](releases/WhisperPair-Magisk-v1.2.0.zip)
+2. Open Magisk → Modules → Install from storage
+3. Select the ZIP and reboot
+4. App will have system permissions automatically
 
 ### Build from Source
 ```bash
-git clone https://github.com/zalexdev/whisper-pair-app.git
-cd whisper-pair-app
-./gradlew assembleDebug
+git clone https://github.com/k0ssa0/wpair-app-fixed-perms.git
+cd wpair-app-fixed-perms
+./gradlew assembleRelease
 ```
 
 ## Usage

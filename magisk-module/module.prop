@@ -1,0 +1,7 @@
+id=whisperpair
+name=WhisperPair
+version=v1.0.0
+versionCode=1
+author=ZalexDev
+description=Fast Pair CVE-2025-36911 PoC - Installs WhisperPair as system privileged app with required Bluetooth permissions
+updateJson=
