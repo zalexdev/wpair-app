@@ -14,10 +14,15 @@
 .cxx
 local.properties
 
-# Build outputs
+# Build outputs (except releases folder)
 *.apk
 *.zip
 WhisperPair-Magisk.zip
+!releases/*.apk
+!releases/*.zip
 
 # Platform tools (user should download)
 platform-tools/
+
+# Magisk module APK (built dynamically)
+magisk-module/system/priv-app/WhisperPair/WhisperPair.apk
