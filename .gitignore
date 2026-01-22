@@ -26,3 +26,4 @@ platform-tools/
 
 # Magisk module APK (built dynamically)
 magisk-module/system/priv-app/WhisperPair/WhisperPair.apk
+wpair-release.keystore

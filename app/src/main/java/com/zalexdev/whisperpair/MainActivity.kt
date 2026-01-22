@@ -497,14 +497,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Execute a root command using the stdin method.
-     * This is more reliable for Magisk/KernelSU than passing -c argument.
-     * 
-     * @param command The shell command to execute with root privileges
-     * @param timeoutSeconds Maximum time to wait for command completion (default 30s)
-     * @return Pair of (exitCode, errorOutput) - exitCode 0 means success
-     */
+    // Execute root command via stdin (Magisk/KernelSU compatible)
     private fun executeRootCommand(command: String, timeoutSeconds: Long = 30): Pair<Int, String> {
         debugLog("ROOT", "Executing: $command")
         
@@ -571,16 +564,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Setup root permissions for seamless Bluetooth control.
-     * Grants MODIFY_PHONE_STATE and BLUETOOTH_PRIVILEGED permissions via pm grant.
-     * This allows the app to connect/disconnect HFP profiles without manual Settings intervention.
-     */
+    // Grant BT permissions via root (MODIFY_PHONE_STATE, BLUETOOTH_PRIVILEGED)
     private fun setupRootPermissions() {
         thread {
             val packageName = this.packageName
-            
-            // List of permissions that help with Bluetooth audio control
             val permissions = listOf(
                 "android.permission.MODIFY_PHONE_STATE",
                 "android.permission.BLUETOOTH_PRIVILEGED",
@@ -607,13 +594,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Connect HFP audio profile using ROOT shell command.
-     * Tries multiple strategies:
-     * 1. cmd bluetooth_manager connect (Android 11+)
-     * 2. service call bluetooth_manager (lower level fallback)
-     * 3. Settings activity intent as last resort
-     */
+    // Connect HFP via root (tries cmd bluetooth_manager, then broadcast fallback)
     private fun connectHfpWithRoot(address: String) {
         thread {
             runOnUiThread {
@@ -622,12 +603,10 @@ class MainActivity : ComponentActivity() {
                 )
             }
 
-            // Strategy 1: cmd bluetooth_manager connect (most common on AOSP/Pixel)
             var command = "cmd bluetooth_manager connect $address 1"
             var (exitCode, errorOutput) = executeRootCommand(command)
             
-            // Strategy 2: If cmd failed, try am start with Bluetooth settings intent to auto-connect
-            // Some ROMs don't have cmd bluetooth_manager
+            // Fallback if cmd not available
             if (exitCode != 0 && (errorOutput.contains("not found", ignoreCase = true) || 
                                    errorOutput.contains("Unknown command", ignoreCase = true))) {
                 android.util.Log.d("WhisperPair", "cmd bluetooth_manager not available, trying alternative...")
@@ -643,18 +622,14 @@ class MainActivity : ComponentActivity() {
             runOnUiThread {
                 when {
                     exitCode == 0 -> {
-                        // Give it a moment for the connection to establish
                         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                            // Verify HFP connection via audioManager
                             val am = audioManager
                             if (am != null && am.isHfpConnected(address)) {
                                 audioStates[address] = AudioConnectionState(
                                     isConnected = true,
-                                    message = "HFP connected (Root) - ready for audio"
+                                    message = "HFP connected (Root)"
                                 )
                             } else {
-                                // Command succeeded but connection not verified - try to trigger connection
-                                // via audioManager since we now have permissions
                                 audioStates[address] = AudioConnectionState(
                                     isConnected = true,
                                     message = "HFP connected (Root)"
@@ -663,8 +638,7 @@ class MainActivity : ComponentActivity() {
                         }, 2000)
                     }
                     exitCode == -2 -> {
-                        // Timeout
-                        android.util.Log.e("WhisperPair", "Root HFP timed out after 30s")
+                        android.util.Log.e("WhisperPair", "Root HFP timed out")
                         audioStates[address] = AudioConnectionState(
                             message = "Root command timed out",
                             hasHfpError = true
@@ -795,10 +769,7 @@ class MainActivity : ComponentActivity() {
         ) ?: AudioConnectionState()
     }
 
-    /**
-     * Force remove bond using reflection to call hidden BluetoothDevice.removeBond() method.
-     * This bypasses normal UI restrictions for removing paired devices.
-     */
+    // Force unpair via reflection (BluetoothDevice.removeBond)
     private fun forceRemoveBond(device: FastPairDevice) {
         try {
             val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
@@ -810,18 +781,14 @@ class MainActivity : ComponentActivity() {
             }
 
             val btDevice: BluetoothDevice = adapter.getRemoteDevice(device.address)
-
-            // Use reflection to call the hidden removeBond() method
             val removeBondMethod = btDevice.javaClass.getMethod("removeBond")
             val result = removeBondMethod.invoke(btDevice) as Boolean
 
             if (result) {
-                // Remove from local paired devices list
                 if (pairedDevices.contains(device.address)) {
                     pairedDevices.remove(device.address)
                     savePairedDevices()
                 }
-                // Clear audio state for this device
                 audioStates.remove(device.address)
                 exploitResults.remove(device.address)
 
@@ -853,11 +820,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Restart the Bluetooth stack by killing the Bluetooth daemon using ROOT.
-     * This forces Android to restart the Bluetooth service and flush cached state.
-     * Useful for clearing "zombie" paired devices that can't be removed normally.
-     */
+    // Kill Bluetooth daemon to force stack restart (root)
     private fun restartBluetoothStack() {
         thread {
             val (exitCode, errorOutput) = executeRootCommand("pkill -9 com.android.bluetooth")
@@ -900,13 +863,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    /**
-     * Combined fix for zombie paired devices: force remove bond then restart Bluetooth stack.
-     * Requires ROOT access.
-     */
+    // Fix zombie connection: unbond + restart BT stack
     private fun fixConnection(device: FastPairDevice) {
         forceRemoveBond(device)
-        // Small delay before restarting stack to ensure bond removal is processed
         thread {
             Thread.sleep(500)
             restartBluetoothStack()
